@@ -3,6 +3,7 @@ package registry
 // Monitoring middlewares for registry interfaces
 
 import (
+	"context"
 	"strconv"
 	"time"
 
@@ -77,9 +78,9 @@ func NewInstrumentedClient(next Client) Client {
 	}
 }
 
-func (m *instrumentedClient) Manifest(ref string) (res image.Info, err error) {
+func (m *instrumentedClient) Manifest(ctx context.Context, ref string) (res image.Info, err error) {
 	start := time.Now()
-	res, err = m.next.Manifest(ref)
+	res, err = m.next.Manifest(ctx, ref)
 	remoteDuration.With(
 		LabelRequestKind, RequestKindMetadata,
 		fluxmetrics.LabelSuccess, strconv.FormatBool(err == nil),
@@ -87,9 +88,9 @@ func (m *instrumentedClient) Manifest(ref string) (res image.Info, err error) {
 	return
 }
 
-func (m *instrumentedClient) Tags() (res []string, err error) {
+func (m *instrumentedClient) Tags(ctx context.Context) (res []string, err error) {
 	start := time.Now()
-	res, err = m.next.Tags()
+	res, err = m.next.Tags(ctx)
 	remoteDuration.With(
 		LabelRequestKind, RequestKindTags,
 		fluxmetrics.LabelSuccess, strconv.FormatBool(err == nil),
